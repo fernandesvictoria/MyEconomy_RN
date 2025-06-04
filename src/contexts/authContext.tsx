@@ -1,12 +1,15 @@
 import React, { createContext, ReactNode, useEffect, useState } from "react";
 import { signIn, signUp } from "../services/auth/authService";
+
 import api from "../utils/api";
 import * as localStorage from "../utils/localStorage";
+import { getCurrentUser, Usuario } from "../services/auth/userService";
 
 interface AuthContextProps {
   authState?: {
     token: string | null;
     authenticated: boolean | null;
+    user: Usuario | null;
   };
   onRegister?: (
     nome: string,
@@ -17,41 +20,64 @@ interface AuthContextProps {
   ) => Promise<any>;
   onLogin?: (email: string, senha: string) => Promise<any>;
   onLogout?: () => Promise<any>;
+  loadUserData?: () => Promise<void>;
+  isLoading?: boolean;
 }
 
 interface AuthenticateProps {
   token: string | null;
   authenticated: boolean | null;
+  user: Usuario | null;
 }
 
-//Tipando por causa do typescript
 type AuthProviderProps = {
   children: ReactNode;
 };
 
 const TOKEN_KEY = "access-token";
 
-//Responsável por criar o contexto de Auth
 export const AuthContext = createContext<AuthContextProps>({});
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [authState, setAuthState] = useState<AuthenticateProps>({
     token: null,
     authenticated: null,
+    user: null,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  //Responsável por pegar o token inicial
+  // Função para carregar dados do usuário
+  const loadUserData = async () => {
+    try {
+      setIsLoading(true);
+      const userData = await getCurrentUser();
+      setAuthState((prev) => ({
+        ...prev,
+        user: userData,
+      }));
+    } catch (error) {
+      console.error("Erro ao carregar dados do usuário:", error);
+      // Se falhar ao carregar dados do usuário, pode ser que o token expirou
+      await logout();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const loadToken = async () => {
       const token = await localStorage.getStorageItem(TOKEN_KEY);
-      //adiciona ao header, se existir
+
       if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
         setAuthState({
           token: token,
           authenticated: true,
+          user: null,
         });
+
+        await loadUserData();
       }
     };
 
@@ -77,16 +103,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const result = await signIn({ email, senha });
 
+      api.defaults.headers.common["Authorization"] = `Bearer ${result}`;
+
+      await localStorage.setStorageItem(TOKEN_KEY, result);
+
       setAuthState({
         authenticated: true,
         token: result,
+        user: null,
       });
 
-      // todas as requisições que forem feitas depois disso vão ter o token no header
-      api.defaults.headers.common["Authorization"] = `Bearer ${result}`;
-
-      //salva o token no localStorage
-      await localStorage.setStorageItem(TOKEN_KEY, result);
+      // Carrega os dados do usuário após o login
+      await loadUserData();
 
       return result;
     } catch (error) {
@@ -101,6 +129,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setAuthState({
       authenticated: null,
       token: null,
+      user: null,
     });
   };
 
@@ -109,6 +138,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     onLogin: login,
     onLogout: logout,
     authState,
+    loadUserData,
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
