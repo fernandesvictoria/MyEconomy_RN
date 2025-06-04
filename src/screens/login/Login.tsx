@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Alert,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, Text, View, Alert, TouchableOpacity } from "react-native";
 import Button from "../../components/Button";
 import { TextInput } from "react-native-gesture-handler";
 import { useAuth } from "../../hooks/useAuth";
@@ -16,6 +10,7 @@ export default function Login({ navigation }) {
   const { onLogin } = useAuth();
 
   const isValidForm = email.trim() !== "" && senha.trim() !== "";
+  
   const handleSignIn = async () => {
     try {
       await onLogin(email, senha);
@@ -27,27 +22,31 @@ export default function Login({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Entrar</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
+      <Text style={styles.title}>ENTRAR</Text>
+      
+      <View style={styles.formContainer}>
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        secureTextEntry
-        value={senha}
-        onChangeText={setSenha}
-      />
-      <Button title="Login" onPress={handleSignIn} disabled={!isValidForm} />
+        <Text style={styles.label}>Senha</Text>
+        <TextInput
+          style={styles.input}
+          secureTextEntry
+          value={senha}
+          onChangeText={setSenha}
+        />
+        
+        <Button title="Entrar" onPress={handleSignIn} disabled={!isValidForm} />
 
-      <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-        <Text style={styles.registerLink}>Não tem uma conta? Registre-se!</Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+          <Text style={styles.registerLink}>Não possui conta? Crie aqui</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -55,41 +54,50 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: "#f5f5f5",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 32,
     color: "#333",
+    marginBottom: 40,
+    letterSpacing: 2,
   },
-  registerLink: {
+  formContainer: {
+    width: "100%",
+    maxWidth: 300,
+  },
+  label: {
     fontSize: 16,
-    color: "#6227a3", // Cor azul similar aos links
-    fontWeight: "bold",
-  },
-  subtitle: {
-    fontSize: 12,
-    textAlign: "center",
-    marginBottom: 20,
     color: "#333",
+    marginBottom: 8,
+    fontWeight: "500",
   },
   input: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#6227a3",
-    backgroundColor: "#eee3fa",
-    padding: 15,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
     borderRadius: 8,
-    width: "80%",
-    textAlign: "center",
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  buttonsColumn: {
-    width: "80%",
+  registerLink: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    textDecorationLine: "underline",
   },
 });

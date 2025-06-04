@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { StyleSheet, Text, View, Alert } from "react-native";
+import { StyleSheet, Text, View, Alert, TouchableOpacity } from "react-native";
 import Button from "../../components/Button";
 import { TextInput } from "react-native-gesture-handler";
 import { useAuth } from "../../hooks/useAuth";
@@ -23,14 +23,13 @@ export default function NewUser({ navigation }) {
     );
   }, [nome, email, dataNascimento, senha, confirmarSenha]);
 
-  const handleDataNascimentoChange = (text: string) => {
+  const handleDataNascimentoChange = (text) => {
     let value = text.replace(/\D/g, "");
 
     if (value.length > 8) {
       value = value.slice(0, 8);
     }
 
-    
     if (value.length <= 2) {
       value = value.replace(/(\d{2})/, "$1");
     } else if (value.length <= 4) {
@@ -42,8 +41,7 @@ export default function NewUser({ navigation }) {
     setDataNascimento(value); 
   };
 
-  
-  const isValidDataNascimento = (data: string): boolean => {
+  const isValidDataNascimento = (data) => {
     const regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
     if (!regex.test(data)) {
       return false; 
@@ -69,7 +67,6 @@ export default function NewUser({ navigation }) {
         return;
       }
 
-      // Converte a data de nascimento para o formato YYYY-MM-DD
       const [dia, mes, ano] = dataNascimento.split("/").map(Number);
       const formattedDate = `${ano}-${String(mes).padStart(2, "0")}-${String(
         dia
@@ -84,7 +81,7 @@ export default function NewUser({ navigation }) {
       );
       Alert.alert("Sucesso", "Usuário registrado!");
       navigation.navigate("Login");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao registrar", error);
       const msg =
         error.response?.data?.message || 
@@ -97,85 +94,105 @@ export default function NewUser({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Registrar</Text>
+      <Text style={styles.title}>CRIAR</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Nome"
-        value={nome}
-        onChangeText={setNome}
-      />
+      <View style={styles.formContainer}>
+        <Text style={styles.label}>Nome</Text>
+        <TextInput
+          style={styles.input}
+          value={nome}
+          onChangeText={setNome}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
 
-     <TextInput
-        style={styles.input}
-        placeholder="Data de Nascimento"
-        value={dataNascimento}
-        onChangeText={handleDataNascimentoChange} 
-        keyboardType="numeric"
-      />
+        <Text style={styles.label}>Data de nascimento</Text>
+        <TextInput
+          style={styles.input}
+          value={dataNascimento}
+          onChangeText={handleDataNascimentoChange} 
+          keyboardType="numeric"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        value={senha}
-        onChangeText={setSenha}
-        secureTextEntry
-      />
+        <Text style={styles.label}>Senha</Text>
+        <TextInput
+          style={styles.input}
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Confirmar Senha"
-        value={confirmarSenha}
-        onChangeText={setConfirmarSenha}
-        secureTextEntry
-      />
+        <Text style={styles.label}>Confirmar senha</Text>
+        <TextInput
+          style={styles.input}
+          value={confirmarSenha}
+          onChangeText={setConfirmarSenha}
+          secureTextEntry
+        />
 
-      <Button title="Cadastrar" disabled={!isValidForm} onPress={register} />
+        <Button title="Criar" disabled={!isValidForm} onPress={register} />
+
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backLink}>Voltar</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 32,
+    backgroundColor: "#f5f5f5",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 32,
     color: "#333",
+    marginBottom: 40,
+    letterSpacing: 2,
   },
-  subtitle: {
-    fontSize: 12,
-    textAlign: "center",
-    marginBottom: 20,
+  formContainer: {
+    width: "100%",
+    maxWidth: 300,
+  },
+  label: {
+    fontSize: 16,
     color: "#333",
+    marginBottom: 8,
+    fontWeight: "500",
   },
   input: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#6227a3",
-    backgroundColor: "#eee3fa",
-    padding: 15,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
     borderRadius: 8,
-    width: "90%",
-    textAlign: "center",
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  buttonContainer: {
-    width: "90%",
-    marginTop: 20,
+  backLink: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    textDecorationLine: "underline",
   },
 });
