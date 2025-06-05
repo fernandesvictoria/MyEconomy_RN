@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
     justifyContent: "center",
+    alignSelf: "center", // Adiciona centralização horizontal
     marginBottom: 10,
     backgroundColor: "#4CAF50",
   },

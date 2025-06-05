@@ -14,7 +14,7 @@ export default function Login({ navigation }) {
   const handleSignIn = async () => {
     try {
       await onLogin(email, senha);
-      navigation.navigate("Home");
+      navigation.navigate("Profile");
     } catch (error) {
       Alert.alert("Erro", "E-mail ou senha inválidos");
     }
@@ -54,7 +54,7 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#ffffff",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,

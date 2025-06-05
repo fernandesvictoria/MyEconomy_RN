@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
-import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, ActivityIndicator, SafeAreaView } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import Button from "../components/Button";
+import BottomNavigation from "../components/BottomNavigation";
 
 export default function Profile({ navigation }) {
   const { authState, onLogout, loadUserData, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState('Profile');
 
   // Carrega os dados do usuário quando o componente é montado
   useEffect(() => {
@@ -22,6 +24,28 @@ export default function Profile({ navigation }) {
     }
   };
 
+  const handleTabPress = (tabName: string) => {
+    setActiveTab(tabName);
+    
+    // Navegação baseada no tab selecionado
+    switch (tabName) {
+      case 'Home':
+        navigation.navigate('Home');
+        break;
+      case 'Despesa':
+        navigation.navigate('Despesa');
+        break;
+      case 'Home':
+        navigation.navigate('Home');
+        break;
+      case 'Limite':
+        navigation.navigate('Limite');
+        break;
+      default:
+        break;
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -34,51 +58,62 @@ export default function Profile({ navigation }) {
   // Exibe loading enquanto carrega os dados
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <SafeAreaView style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color="#007AFF" />
         <Text style={styles.loadingText}>Carregando dados...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Meus Dados</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Meus Dados</Text>
+        
+        <View style={styles.dataContainer}>
+          <View style={styles.dataItem}>
+            <Text style={styles.label}>Nome</Text>
+            <Text style={styles.value}>{userData?.nome || "Não informado"}</Text>
+          </View>
 
-      <View style={styles.dataContainer}>
-        <View style={styles.dataItem}>
-          <Text style={styles.label}>Nome</Text>
-          <Text style={styles.value}>{userData?.nome || "Não informado"}</Text>
+          <View style={styles.dataItem}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{userData?.email || "Não informado"}</Text>
+          </View>
+
+          <View style={styles.dataItem}>
+            <Text style={styles.label}>Data de nascimento</Text>
+            <Text style={styles.value}>
+              {userData?.dataNascimento
+                ? formatDate(userData.dataNascimento)
+                : "Não informado"}
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.dataItem}>
-          <Text style={styles.label}>Email</Text>
-          <Text style={styles.value}>{userData?.email || "Não informado"}</Text>
-        </View>
-
-        <View style={styles.dataItem}>
-          <Text style={styles.label}>Data de nascimento</Text>
-          <Text style={styles.value}>
-            {userData?.dataNascimento
-              ? formatDate(userData.dataNascimento)
-              : "Não informado"}
-          </Text>
+        <View style={styles.buttonContainer}>
+          <Button title="SAIR" onPress={handleLogout} />
         </View>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <Button title="SAIR" onPress={handleLogout} />
-      </View>
-    </View>
+      <BottomNavigation 
+        activeTab={activeTab} 
+        onTabPress={handleTabPress} 
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#ffffff",
+  },
+  content: {
+    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 60,
+    paddingBottom: 90, // Aumentado para garantir espaço para a bottom navigation
   },
   loadingContainer: {
     justifyContent: "center",
@@ -106,7 +141,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     color: "#333",
-    fontWeight: "500",
+    fontWeight: "bold",
     marginBottom: 5,
   },
   value: {
@@ -118,6 +153,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingHorizontal: 10,
-    paddingBottom: 100,
+    paddingBottom: 100, // Aumentado para dar espaço suficiente para a bottom navigation
+    marginBottom: 20,
   },
 });
