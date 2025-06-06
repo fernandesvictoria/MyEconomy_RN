@@ -1,20 +1,20 @@
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Home from "./src/screens/home/Home";
-import Profile from "./src/screens/Profile"; // Importe a tela Profile
-import Login from "./src/screens/login/Login";
-import Despesa from "./src/screens/Despesa"; 
-import SignUp from "./src/screens/login/SignUp";
 import { useAuth } from "./src/hooks/useAuth";
-import { Text } from 'react-native';
+import Despesa from "./src/screens/Despesa";
+import Limite from "./src/screens/Limite";
+import Home from "./src/screens/home/Home";
+import Login from "./src/screens/login/Login";
+import SignUp from "./src/screens/login/SignUp";
+import Profile from "./src/screens/Profile"; // Importe a tela Profile
 
 const Stack = createNativeStackNavigator();
 
 export default function Layout() {
   const { authState, onLogout } = useAuth();
-  
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
@@ -42,25 +42,30 @@ export default function Layout() {
                 name="Profile"
                 component={Profile}
                 options={{
-                  headerShown: false, 
+                  headerShown: false,
                 }}
               />
               <Stack.Screen
                 name="Home"
                 component={Home}
                 options={{
-                  headerShown: false, 
+                  headerShown: false,
                 }}
               />
-               <Stack.Screen
+              <Stack.Screen
                 name="Despesa"
                 component={Despesa}
                 options={{
-                  headerShown: false, 
+                  headerShown: false,
                 }}
-              
               />
-              
+              <Stack.Screen
+                name="Limite"
+                component={Limite}
+                options={{
+                  headerShown: false,
+                }}
+              />
             </>
           )}
         </Stack.Navigator>

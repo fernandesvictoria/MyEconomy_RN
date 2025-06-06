@@ -77,7 +77,7 @@ export default function Home({ navigation }) {
         </View>
 
         {/* Card principal com progresso */}
-        <TouchableOpacity style={styles.mainCard}>
+        <View style={styles.mainCard}>
           <View style={styles.emojiContainer}>
             <Text style={styles.emoji}>😊</Text>
           </View>
@@ -95,7 +95,7 @@ export default function Home({ navigation }) {
               <View style={[styles.progressBar, { width: `${Math.min(progressPercentage, 100)}%` }]} />
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
 
         {/* Espaçamento para a bottom navigation */}
         <View style={styles.spacer} />

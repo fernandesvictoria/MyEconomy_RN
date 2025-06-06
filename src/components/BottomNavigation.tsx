@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // ou use react-native-vector-icons
+import { Ionicons } from '@expo/vector-icons';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -20,12 +20,15 @@ export default function BottomNavigation({ activeTab, onTabPress }: BottomNaviga
       {tabs.map((tab) => (
         <TouchableOpacity
           key={tab.name}
-          style={styles.tabButton}
+          style={[
+            styles.tabButton,
+            activeTab === tab.name && styles.activeTabButton,
+          ]}
           onPress={() => onTabPress(tab.name)}
         >
           <Ionicons
             name={tab.icon as any}
-            size={24}
+            size={26}
             color={activeTab === tab.name ? '#4CAF50' : '#ffffff'}
           />
         </TouchableOpacity>
@@ -63,5 +66,8 @@ const styles = StyleSheet.create({
     minWidth: 50,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  activeTabButton: {
+    backgroundColor: '#ffffff',
   },
 });
