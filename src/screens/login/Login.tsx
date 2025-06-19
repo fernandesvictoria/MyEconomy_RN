@@ -7,11 +7,21 @@ import { useAuth } from "../../hooks/useAuth";
 export default function Login({ navigation }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const { onLogin } = useAuth();
 
-  const isValidForm = email.trim() !== "" && senha.trim() !== "";
-  
+  const isValidForm = 
+    email.trim() !== "" && 
+    senha.trim() !== "" && 
+    confirmarSenha.trim() !== "" &&
+    senha === confirmarSenha;
+
   const handleSignIn = async () => {
+    if (senha !== confirmarSenha) {
+      Alert.alert("Erro", "As senhas não coincidem");
+      return;
+    }
+
     try {
       await onLogin(email, senha);
       navigation.navigate("Profile");
@@ -40,6 +50,21 @@ export default function Login({ navigation }) {
           value={senha}
           onChangeText={setSenha}
         />
+
+        <Text style={styles.label}>Confirmar Senha</Text>
+        <TextInput
+          style={[
+            styles.input,
+            confirmarSenha !== "" && senha !== confirmarSenha && styles.inputError
+          ]}
+          secureTextEntry
+          value={confirmarSenha}
+          onChangeText={setConfirmarSenha}
+        />
+
+        {confirmarSenha !== "" && senha !== confirmarSenha && (
+          <Text style={styles.errorText}>As senhas não coincidem</Text>
+        )}
         
         <Button title="Entrar" onPress={handleSignIn} disabled={!isValidForm} />
 
@@ -93,6 +118,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  inputError: {
+    borderColor: "#ff4444",
+    borderWidth: 2,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#ff4444",
+    marginTop: -15,
+    marginBottom: 15,
+    textAlign: "left",
   },
   registerLink: {
     fontSize: 14,
