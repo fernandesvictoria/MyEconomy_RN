@@ -1,61 +1,68 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
-  SafeAreaView,
   TextInput,
-  Alert,
-  ScrollView,
   TouchableOpacity,
-  Modal,
-  FlatList,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { Picker } from '@react-native-picker/picker';
-import { Ionicons } from '@expo/vector-icons';
-import Button from "../components/Button";
 import BottomNavigation from "../components/BottomNavigation";
+import Button from "../components/Button";
+import {
+  buscarDespesas,
+  cadastrarDespesa,
+  deletarDespesa,
+  editarDespesa,
+  filtrarDespesasPorMesAno,
+} from "../services/despesaService";
 
 export default function Despesa({ navigation }) {
-  const [activeTab, setActiveTab] = useState('Despesa');
+  const [activeTab, setActiveTab] = useState("Despesa");
   const [despesas, setDespesas] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Estados do formulário
-  const [descricao, setDescricao] = useState('');
-  const [valor, setValor] = useState('');
-  const [mesSelecionado, setMesSelecionado] = useState('');
-  const [anoSelecionado, setAnoSelecionado] = useState('');
-  
+  const [descricao, setDescricao] = useState("");
+  const [valor, setValor] = useState("");
+  const [mesSelecionado, setMesSelecionado] = useState("");
+  const [anoSelecionado, setAnoSelecionado] = useState("");
+
   // Estados para histórico
-  const [mesHistorico, setMesHistorico] = useState('');
-  const [anoHistorico, setAnoHistorico] = useState('');
+  const [mesHistorico, setMesHistorico] = useState("");
+  const [anoHistorico, setAnoHistorico] = useState("");
   const [despesasFiltradas, setDespesasFiltradas] = useState([]);
-  
+
   // Estados para edição
   const [modalVisible, setModalVisible] = useState(false);
   const [despesaEditando, setDespesaEditando] = useState(null);
-  const [descricaoEdit, setDescricaoEdit] = useState('');
-  const [valorEdit, setValorEdit] = useState('');
+  const [descricaoEdit, setDescricaoEdit] = useState("");
+  const [valorEdit, setValorEdit] = useState("");
 
   // Gerar meses e anos disponíveis
   const mesAtual = new Date().getMonth();
   const anoAtual = new Date().getFullYear();
-  
+
   const meses = [
-    { value: '0', label: 'Janeiro' },
-    { value: '1', label: 'Fevereiro' },
-    { value: '2', label: 'Março' },
-    { value: '3', label: 'Abril' },
-    { value: '4', label: 'Maio' },
-    { value: '5', label: 'Junho' },
-    { value: '6', label: 'Julho' },
-    { value: '7', label: 'Agosto' },
-    { value: '8', label: 'Setembro' },
-    { value: '9', label: 'Outubro' },
-    { value: '10', label: 'Novembro' },
-    { value: '11', label: 'Dezembro' },
+    { value: "0", label: "Janeiro" },
+    { value: "1", label: "Fevereiro" },
+    { value: "2", label: "Março" },
+    { value: "3", label: "Abril" },
+    { value: "4", label: "Maio" },
+    { value: "5", label: "Junho" },
+    { value: "6", label: "Julho" },
+    { value: "7", label: "Agosto" },
+    { value: "8", label: "Setembro" },
+    { value: "9", label: "Outubro" },
+    { value: "10", label: "Novembro" },
+    { value: "11", label: "Dezembro" },
   ];
 
   const anos = [];
@@ -80,107 +87,93 @@ export default function Despesa({ navigation }) {
   const carregarDespesas = async () => {
     setLoading(true);
     try {
-      // Aqui você faria a chamada para sua API
-      // const response = await api.get('/despesas');
-      // setDespesas(response.data);
-      
-      // Simulando dados para exemplo
-      const dadosSimulados = [
-        {
-          id: 1,
-          descricao: 'Supermercado',
-          valor: 150.00,
-          mes: mesAtual,
-          ano: anoAtual,
-          dataCreated: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          descricao: 'Combustível',
-          valor: 200.00,
-          mes: mesAtual,
-          ano: anoAtual,
-          dataCreated: new Date().toISOString(),
-        },
-      ];
-      setDespesas(dadosSimulados);
+      const despesasCarregadas = await buscarDespesas();
+      setDespesas(despesasCarregadas);
     } catch (error) {
-      console.error('Erro ao carregar despesas:', error);
-      Alert.alert('Erro', 'Falha ao carregar despesas');
+      console.error("Erro ao carregar despesas:", error);
+      Alert.alert("Erro", error.message || "Falha ao carregar despesas");
     } finally {
       setLoading(false);
     }
   };
 
   const filtrarDespesasPorMes = () => {
-    const despesasDoMes = despesas.filter(despesa => 
-      despesa.mes.toString() === mesHistorico && 
-      despesa.ano.toString() === anoHistorico
-    );
+    const mesNum = parseInt(mesHistorico);
+    const anoNum = parseInt(anoHistorico);
+
+    const despesasDoMes = filtrarDespesasPorMesAno(despesas, mesNum, anoNum);
     setDespesasFiltradas(despesasDoMes);
   };
 
   const validarMesPermitido = (mes, ano) => {
     const mesNum = parseInt(mes);
     const anoNum = parseInt(ano);
-    
+
     if (anoNum > anoAtual) return true;
     if (anoNum === anoAtual && mesNum >= mesAtual) return true;
-    
+
     return false;
+  };
+
+  const criarDataDoMesAno = (mes, ano) => {
+    // Criar uma data para o primeiro dia do mês/ano selecionado
+    return new Date(parseInt(ano), parseInt(mes), 1);
   };
 
   const salvarDespesa = async () => {
     if (!descricao.trim()) {
-      Alert.alert('Erro', 'Descrição é obrigatória');
+      Alert.alert("Erro", "Descrição é obrigatória");
       return;
     }
-    
+
     if (!valor || isNaN(parseFloat(valor))) {
-      Alert.alert('Erro', 'Valor deve ser um número válido');
+      Alert.alert("Erro", "Valor deve ser um número válido");
       return;
     }
-    
+
     if (!validarMesPermitido(mesSelecionado, anoSelecionado)) {
-      Alert.alert('Erro', 'Não é possível criar despesas para meses anteriores ao atual');
+      Alert.alert(
+        "Erro",
+        "Não é possível criar despesas para meses anteriores ao atual"
+      );
       return;
     }
 
     setLoading(true);
     try {
-      const novaDespesa = {
-        id: Date.now(), // Em produção, use um ID do backend
-        descricao: descricao.trim(),
-        valor: parseFloat(valor),
-        mes: parseInt(mesSelecionado),
-        ano: parseInt(anoSelecionado),
-        dataCreated: new Date().toISOString(),
-      };
+      const dataParaCadastro = criarDataDoMesAno(
+        mesSelecionado,
+        anoSelecionado
+      );
 
-      //  chamada para API
-      
-      
-      setDespesas([...despesas, novaDespesa]);
-      
-    
-      setDescricao('');
-      setValor('');
-      
-      Alert.alert('Sucesso', 'Despesa salva com sucesso!');
+      await cadastrarDespesa(
+        descricao.trim(),
+        parseFloat(valor),
+        dataParaCadastro
+      );
+
+      // Recarregar as despesas
+      await carregarDespesas();
+
+      // Limpar formulário
+      setDescricao("");
+      setValor("");
+
+      Alert.alert("Sucesso", "Despesa salva com sucesso!");
     } catch (error) {
-      console.error('Erro ao salvar despesa:', error);
-      Alert.alert('Erro', 'Falha ao salvar despesa');
+      console.error("Erro ao salvar despesa:", error);
+      Alert.alert("Erro", error.message || "Falha ao salvar despesa");
     } finally {
       setLoading(false);
     }
   };
 
-  const editarDespesa = (despesa) => {
+  const editarDespesaItem = (despesa) => {
     if (!validarMesPermitido(despesa.mes.toString(), despesa.ano.toString())) {
-      Alert.alert('Erro', 'Não é possível editar despesas de meses anteriores');
+      Alert.alert("Erro", "Não é possível editar despesas de meses anteriores");
       return;
     }
-    
+
     setDespesaEditando(despesa);
     setDescricaoEdit(despesa.descricao);
     setValorEdit(despesa.valor.toString());
@@ -189,38 +182,37 @@ export default function Despesa({ navigation }) {
 
   const salvarEdicao = async () => {
     if (!descricaoEdit.trim()) {
-      Alert.alert('Erro', 'Descrição é obrigatória');
+      Alert.alert("Erro", "Descrição é obrigatória");
       return;
     }
-    
+
     if (!valorEdit || isNaN(parseFloat(valorEdit))) {
-      Alert.alert('Erro', 'Valor deve ser um número válido');
+      Alert.alert("Erro", "Valor deve ser um número válido");
       return;
     }
 
     setLoading(true);
     try {
-      const despesaAtualizada = {
-        ...despesaEditando,
-        descricao: descricaoEdit.trim(),
-        valor: parseFloat(valorEdit),
-      };
+      // Usar a data original da despesa
+      const dataOriginal = new Date(despesaEditando.data + "T00:00:00");
 
-      // chamada para API
- 
-      
-      const despesasAtualizadas = despesas.map(d => 
-        d.id === despesaEditando.id ? despesaAtualizada : d
+      await editarDespesa(
+        despesaEditando.idDespesa,
+        descricaoEdit.trim(),
+        parseFloat(valorEdit),
+        dataOriginal
       );
-      setDespesas(despesasAtualizadas);
-      
+
+      // Recarregar as despesas
+      await carregarDespesas();
+
       setModalVisible(false);
       setDespesaEditando(null);
-      
-      Alert.alert('Sucesso', 'Despesa atualizada com sucesso!');
+
+      Alert.alert("Sucesso", "Despesa atualizada com sucesso!");
     } catch (error) {
-      console.error('Erro ao editar despesa:', error);
-      Alert.alert('Erro', 'Falha ao editar despesa');
+      console.error("Erro ao editar despesa:", error);
+      Alert.alert("Erro", error.message || "Falha ao editar despesa");
     } finally {
       setLoading(false);
     }
@@ -228,16 +220,23 @@ export default function Despesa({ navigation }) {
 
   const excluirDespesa = (despesa) => {
     if (!validarMesPermitido(despesa.mes.toString(), despesa.ano.toString())) {
-      Alert.alert('Erro', 'Não é possível excluir despesas de meses anteriores');
+      Alert.alert(
+        "Erro",
+        "Não é possível excluir despesas de meses anteriores"
+      );
       return;
     }
 
     Alert.alert(
-      'Confirmar Exclusão',
+      "Confirmar Exclusão",
       `Deseja excluir a despesa "${despesa.descricao}"?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => confirmarExclusao(despesa) },
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: () => confirmarExclusao(despesa),
+        },
       ]
     );
   };
@@ -245,16 +244,15 @@ export default function Despesa({ navigation }) {
   const confirmarExclusao = async (despesa) => {
     setLoading(true);
     try {
-      // Aqui você faria a chamada para sua API
-      // await api.delete(`/despesas/${despesa.id}`);
-      
-      const despesasAtualizadas = despesas.filter(d => d.id !== despesa.id);
-      setDespesas(despesasAtualizadas);
-      
-      Alert.alert('Sucesso', 'Despesa excluída com sucesso!');
+      await deletarDespesa(despesa.idDespesa);
+
+      // Recarregar as despesas
+      await carregarDespesas();
+
+      Alert.alert("Sucesso", "Despesa excluída com sucesso!");
     } catch (error) {
-      console.error('Erro ao excluir despesa:', error);
-      Alert.alert('Erro', 'Falha ao excluir despesa');
+      console.error("Erro ao excluir despesa:", error);
+      Alert.alert("Erro", error.message || "Falha ao excluir despesa");
     } finally {
       setLoading(false);
     }
@@ -262,16 +260,16 @@ export default function Despesa({ navigation }) {
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
-    
+
     switch (tabName) {
-      case 'Home':
-        navigation.navigate('Home');
+      case "Home":
+        navigation.navigate("Home");
         break;
-      case 'Profile':
-        navigation.navigate('Profile');
+      case "Profile":
+        navigation.navigate("Profile");
         break;
-      case 'Limite':
-        navigation.navigate('Limite');
+      case "Limite":
+        navigation.navigate("Limite");
         break;
       default:
         break;
@@ -279,7 +277,7 @@ export default function Despesa({ navigation }) {
   };
 
   const formatarValor = (valor) => {
-    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+    return `R$ ${valor.toFixed(2).replace(".", ",")}`;
   };
 
   const renderDespesaItem = ({ item }) => (
@@ -287,16 +285,17 @@ export default function Despesa({ navigation }) {
       <View style={styles.despesaInfo}>
         <Text style={styles.despesaDescricao}>{item.descricao}</Text>
         <Text style={styles.despesaValor}>{formatarValor(item.valor)}</Text>
+        <Text style={styles.despesaData}>{item.dataFormatada}</Text>
       </View>
       <View style={styles.despesaActions}>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.editButton]} 
-          onPress={() => editarDespesa(item)}
+        <TouchableOpacity
+          style={[styles.actionButton, styles.editButton]}
+          onPress={() => editarDespesaItem(item)}
         >
           <Ionicons name="pencil" size={18} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.deleteButton]} 
+        <TouchableOpacity
+          style={[styles.actionButton, styles.deleteButton]}
           onPress={() => excluirDespesa(item)}
         >
           <Ionicons name="trash" size={18} color="#fff" />
@@ -309,7 +308,7 @@ export default function Despesa({ navigation }) {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Cadastro de Despesa</Text>
-        
+
         {/* Formulário de Cadastro */}
         <View style={styles.formContainer}>
           <Text style={styles.label}>Descrição *</Text>
@@ -338,7 +337,11 @@ export default function Despesa({ navigation }) {
               style={styles.picker}
             >
               {meses.map((mes) => (
-                <Picker.Item key={mes.value} label={mes.label} value={mes.value} />
+                <Picker.Item
+                  key={mes.value}
+                  label={mes.label}
+                  value={mes.value}
+                />
               ))}
             </Picker>
           </View>
@@ -351,14 +354,18 @@ export default function Despesa({ navigation }) {
               style={styles.picker}
             >
               {anos.map((ano) => (
-                <Picker.Item key={ano.value} label={ano.label} value={ano.value} />
+                <Picker.Item
+                  key={ano.value}
+                  label={ano.label}
+                  value={ano.value}
+                />
               ))}
             </Picker>
           </View>
 
           <View style={styles.buttonContainer}>
-            <Button 
-              title={loading ? "SALVANDO..." : "SALVAR"} 
+            <Button
+              title={loading ? "SALVANDO..." : "SALVAR"}
               onPress={salvarDespesa}
               disabled={loading}
             />
@@ -368,7 +375,6 @@ export default function Despesa({ navigation }) {
         {/* Histórico */}
         <View style={styles.historicoContainer}>
           <Text style={styles.historicoTitle}>Histórico</Text>
-          
           <View style={styles.filtroContainer}>
             <View style={styles.filtroItem}>
               <Text style={styles.label}>Mês:</Text>
@@ -379,12 +385,15 @@ export default function Despesa({ navigation }) {
                   style={styles.picker}
                 >
                   {meses.map((mes) => (
-                    <Picker.Item key={mes.value} label={mes.label} value={mes.value} />
+                    <Picker.Item
+                      key={mes.value}
+                      label={mes.label}
+                      value={mes.value}
+                    />
                   ))}
                 </Picker>
               </View>
             </View>
-            
             <View style={styles.filtroItem}>
               <Text style={styles.label}>Ano:</Text>
               <View style={styles.pickerContainer}>
@@ -394,23 +403,44 @@ export default function Despesa({ navigation }) {
                   style={styles.picker}
                 >
                   {anos.map((ano) => (
-                    <Picker.Item key={ano.value} label={ano.label} value={ano.value} />
+                    <Picker.Item
+                      key={ano.value}
+                      label={ano.label}
+                      value={ano.value}
+                    />
                   ))}
                 </Picker>
               </View>
             </View>
+            r
           </View>
-
+          // Substitua esta parte no seu código de Despesa:
           {loading ? (
-            <ActivityIndicator size="large" color="#4CAF50" style={styles.loading} />
+            <ActivityIndicator
+              size="large"
+              color="#4CAF50"
+              style={styles.loading}
+            />
           ) : (
             <View style={styles.listContainer}>
               <FlatList
                 data={despesasFiltradas}
                 renderItem={renderDespesaItem}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item, index) => {
+                  // Correção para evitar erro de toString undefined
+                  if (item.idDespesa) {
+                    return typeof item.idDespesa === "string"
+                      ? item.idDespesa
+                      : item.idDespesa.toString();
+                  }
+                  return `despesa-${item.ano || "ano"}-${
+                    item.mes || "mes"
+                  }-${index}`;
+                }}
                 ListEmptyComponent={
-                  <Text style={styles.emptyText}>Nenhuma despesa encontrada para este mês</Text>
+                  <Text style={styles.emptyText}>
+                    Nenhuma despesa encontrada para este mês
+                  </Text>
                 }
                 scrollEnabled={false}
                 contentContainerStyle={styles.listContent}
@@ -418,12 +448,12 @@ export default function Despesa({ navigation }) {
             </View>
           )}
         </View>
-        
+
         {/* Espaçamento extra para o bottom navigation */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Modal de Edição */}
+      {/* Modal de edição */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -433,7 +463,7 @@ export default function Despesa({ navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Editar Despesa</Text>
-            
+
             <Text style={styles.label}>Descrição *</Text>
             <TextInput
               style={styles.input}
@@ -453,15 +483,15 @@ export default function Despesa({ navigation }) {
             />
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton]} 
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setModalVisible(false)}
               >
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.saveButton]} 
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
                 onPress={salvarEdicao}
                 disabled={loading}
               >
@@ -474,10 +504,7 @@ export default function Despesa({ navigation }) {
         </View>
       </Modal>
 
-      <BottomNavigation 
-        activeTab={activeTab} 
-        onTabPress={handleTabPress} 
-      />
+      <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
     </SafeAreaView>
   );
 }
@@ -490,7 +517,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 40, // Aumentado de 20 para 40 para dar mais espaço no topo
+    paddingTop: 40,
   },
   title: {
     fontSize: 20,
@@ -540,7 +567,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   bottomSpacing: {
-    height: 100, // Espaço para o bottom navigation
+    height: 100,
   },
   historicoTitle: {
     fontSize: 18,
@@ -549,17 +576,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   filtroContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   filtroItem: {
     flex: 0.48,
   },
   despesaItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     backgroundColor: "#f9f9f9",
     padding: 15,
     borderRadius: 8,
@@ -581,8 +608,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 5,
   },
+  despesaData: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 2,
+  },
   despesaActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
   },
   actionButton: {
@@ -590,8 +622,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     minWidth: 40,
     height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   editButton: {
     backgroundColor: "#2196F3",
@@ -600,11 +632,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#f44336",
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     color: "#666",
     fontSize: 16,
     marginTop: 20,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   loading: {
     marginTop: 20,
@@ -630,8 +662,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 30,
     gap: 15,
   },
@@ -639,7 +671,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   cancelButton: {
     backgroundColor: "#f5f5f5",
