@@ -412,7 +412,6 @@ export default function Despesa({ navigation }) {
                 </Picker>
               </View>
             </View>
-            r
           </View>
           // Substitua esta parte no seu código de Despesa:
           {loading ? (
