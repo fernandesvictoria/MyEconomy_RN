@@ -35,12 +35,12 @@ export default function Despesa({ navigation }) {
   const [mesSelecionado, setMesSelecionado] = useState("");
   const [anoSelecionado, setAnoSelecionado] = useState("");
 
-  // Estados para histórico
+  // Estados do histórico
   const [mesHistorico, setMesHistorico] = useState("");
   const [anoHistorico, setAnoHistorico] = useState("");
   const [despesasFiltradas, setDespesasFiltradas] = useState([]);
 
-  // Estados para edição
+  // Estados da edição
   const [modalVisible, setModalVisible] = useState(false);
   const [despesaEditando, setDespesaEditando] = useState(null);
   const [descricaoEdit, setDescricaoEdit] = useState("");
@@ -152,10 +152,9 @@ export default function Despesa({ navigation }) {
         dataParaCadastro
       );
 
-      // Recarregar as despesas
       await carregarDespesas();
 
-      // Limpar formulário
+      // limpar formulário
       setDescricao("");
       setValor("");
 
@@ -203,7 +202,7 @@ export default function Despesa({ navigation }) {
         dataOriginal
       );
 
-      // Recarregar as despesas
+      // recarregar as despesas
       await carregarDespesas();
 
       setModalVisible(false);
@@ -246,7 +245,7 @@ export default function Despesa({ navigation }) {
     try {
       await deletarDespesa(despesa.idDespesa);
 
-      // Recarregar as despesas
+      // recarregar as despesas
       await carregarDespesas();
 
       Alert.alert("Sucesso", "Despesa excluída com sucesso!");
@@ -306,11 +305,13 @@ export default function Despesa({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* ScrollView permite rolagem quando conteúdo é maior que tela */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Cadastro de Despesa</Text>
 
-        {/* Formulário de Cadastro */}
+        {/* FORMULÁRIO DE CADASTRO */}
         <View style={styles.formContainer}>
+          {/* Campo Descrição */}
           <Text style={styles.label}>Descrição *</Text>
           <TextInput
             style={styles.input}
@@ -320,6 +321,7 @@ export default function Despesa({ navigation }) {
             maxLength={100}
           />
 
+          {/* Campo Valor */}
           <Text style={styles.label}>Valor *</Text>
           <TextInput
             style={styles.input}
@@ -329,6 +331,7 @@ export default function Despesa({ navigation }) {
             keyboardType="numeric"
           />
 
+          {/* Seletor de Mês */}
           <Text style={styles.label}>Mês *</Text>
           <View style={styles.pickerContainer}>
             <Picker
@@ -346,6 +349,7 @@ export default function Despesa({ navigation }) {
             </Picker>
           </View>
 
+          {/* Seletor de Ano */}
           <Text style={styles.label}>Ano *</Text>
           <View style={styles.pickerContainer}>
             <Picker
@@ -363,6 +367,7 @@ export default function Despesa({ navigation }) {
             </Picker>
           </View>
 
+          {/* Botão Salvar */}
           <View style={styles.buttonContainer}>
             <Button
               title={loading ? "SALVANDO..." : "SALVAR"}
@@ -372,9 +377,11 @@ export default function Despesa({ navigation }) {
           </View>
         </View>
 
-        {/* Histórico */}
+        {/*  SEÇÃO DE HISTÓRICO  */}
         <View style={styles.historicoContainer}>
           <Text style={styles.historicoTitle}>Histórico</Text>
+
+          {/* Filtros de Mês e Ano para o histórico */}
           <View style={styles.filtroContainer}>
             <View style={styles.filtroItem}>
               <Text style={styles.label}>Mês:</Text>
@@ -413,20 +420,23 @@ export default function Despesa({ navigation }) {
               </View>
             </View>
           </View>
-          // Substitua esta parte no seu código de Despesa:
+
+          {/* Lista de despesas ou loading */}
           {loading ? (
+            // Mostra indicador de carregamento
             <ActivityIndicator
               size="large"
               color="#4CAF50"
               style={styles.loading}
             />
           ) : (
+            // Lista das despesas filtradas
             <View style={styles.listContainer}>
               <FlatList
                 data={despesasFiltradas}
-                renderItem={renderDespesaItem}
+                renderItem={renderDespesaItem} // Como renderizar cada item
                 keyExtractor={(item, index) => {
-                  // Correção para evitar erro de toString undefined
+                  // Gera chave única para cada item
                   if (item.idDespesa) {
                     return typeof item.idDespesa === "string"
                       ? item.idDespesa
@@ -437,6 +447,7 @@ export default function Despesa({ navigation }) {
                   }-${index}`;
                 }}
                 ListEmptyComponent={
+                  // Componente mostrado quando lista está vazia
                   <Text style={styles.emptyText}>
                     Nenhuma despesa encontrada para este mês
                   </Text>
@@ -448,18 +459,19 @@ export default function Despesa({ navigation }) {
           )}
         </View>
 
-        {/* Espaçamento extra para o bottom navigation */}
+        {/* Espaçamento para não cobrir com navegação */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Modal de edição */}
+      {/*  MODAL DE EDIÇÃO  */}
       <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
+        animationType="slide" // Animação de deslizar
+        transparent={true} // Fundo transparente
+        visible={modalVisible} // Controla visibilidade
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
+          {/* Conteúdo do modal */}
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Editar Despesa</Text>
 
@@ -481,6 +493,7 @@ export default function Despesa({ navigation }) {
               keyboardType="numeric"
             />
 
+            {/* Botões do modal */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
@@ -503,6 +516,7 @@ export default function Despesa({ navigation }) {
         </View>
       </Modal>
 
+      {/* Navegação inferior fixa */}
       <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
     </SafeAreaView>
   );
