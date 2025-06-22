@@ -207,7 +207,7 @@ export default function Home({ navigation }) {
           <View style={styles.mainCard}>
             <View style={styles.emojiContainer}>
               <Text style={styles.emoji}>
-                {porcentagemGasta < 60 ? '😊' : porcentagemGasta < 100 ? '😐' : '😰'}
+                {porcentagemGasta < 60 ? '😊' : porcentagemGasta < 100 ? '😰' : '🤯'}
               </Text>
             </View>
             <Text style={styles.continueText}>

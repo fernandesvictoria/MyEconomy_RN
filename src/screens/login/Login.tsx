@@ -24,7 +24,7 @@ export default function Login({ navigation }) {
 
     try {
       await onLogin(email, senha);
-      navigation.navigate("Profile");
+      navigation.navigate("Home");
     } catch (error) {
       Alert.alert("Erro", "E-mail ou senha inválidos");
     }

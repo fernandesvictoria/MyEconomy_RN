@@ -39,15 +39,15 @@ export default function Layout() {
           ) : (
             <>
               <Stack.Screen
-                name="Profile"
-                component={Profile}
+                name="Home"
+                component={Home}
                 options={{
                   headerShown: false,
                 }}
               />
               <Stack.Screen
-                name="Home"
-                component={Home}
+                name="Profile"
+                component={Profile}
                 options={{
                   headerShown: false,
                 }}
