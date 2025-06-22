@@ -8,21 +8,8 @@ export interface DespesaDTO {
   idUsuario?: string;
 }
 
-export interface DespesaListagemDTO {
-  idDespesa: string;
-  descricao: string;
-  valor: number;
-  data: string;
-  idUsuario: string;
-}
-
 // DTO para o frontend com campos calculados
-export interface DespesaFrontendDTO {
-  idDespesa: string;
-  descricao: string;
-  valor: number;
-  data: string;
-  idUsuario: string;
+export interface DespesaFrontendDTO extends DespesaDTO {
   mes: number;
   ano: number;
   mesNome: string;
@@ -101,6 +88,7 @@ export const editarDespesa = async (
     const dataFormatada = formatarDataParaBackend(data);
 
     const despesaData: DespesaDTO = {
+      idDespesa: idDespesa,
       descricao: descricao.trim(),
       valor: parseFloat(valor.toString()),
       data: dataFormatada,
@@ -133,6 +121,7 @@ export const editarDespesa = async (
 };
 
 export const deletarDespesa = async (idDespesa: string): Promise<void> => {
+  console.log(`Deletando despesa com ID: ${idDespesa}`);
   try {
     console.log(`Deletando despesa ${idDespesa}`);
 
@@ -165,7 +154,7 @@ export const buscarDespesas = async (): Promise<DespesaFrontendDTO[]> => {
     const response = await api.get("/despesa/despesas");
 
     const despesasComInfo: DespesaFrontendDTO[] = response.data.map(
-      (despesa: DespesaListagemDTO) => {
+      (despesa: DespesaDTO) => {
         const { mes, ano, mesNome, anoString, dataFormatada } = extrairInfoData(
           despesa.data
         );

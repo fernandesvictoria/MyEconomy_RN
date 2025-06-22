@@ -1,24 +1,15 @@
 import api from "../utils/api";
 
 export interface LimiteDTO {
-  idLimite?: string; 
+  idLimite?: string;
   valor: number;
   data: string;      // LocalDate será enviada como string YYYY-MM-DD
- 
-}
 
-
-export interface LimiteListagemDTO {
-  valor: number;     // Double
-  data: string;      // LocalDate recebida como string
 }
 
 // DTO extendido para uso no frontend (com campos calculados)
-export interface LimiteFrontendDTO {
-  idLimite: string;
-  valor: number;
-  data: string;
-  mes: number;        
+export interface LimiteFrontendDTO extends LimiteDTO {
+  mes: number;
   ano: number;
   mesNome: string;
   anoString: string;
@@ -60,7 +51,7 @@ export const cadastrarLimite = async (mes: number, ano: number, valor: string | 
   } catch (error) {
     console.error("Erro ao cadastrar limite:", error);
 
-  
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
@@ -73,20 +64,20 @@ export const cadastrarLimite = async (mes: number, ano: number, valor: string | 
   }
 };
 
-export const editarLimite = async (idLimite: string, mes: number, ano: number, valor: string | number): Promise<any> => {
+export const editarLimite = async (id: string, mes: number, ano: number, valor: number): Promise<any> => {
   try {
     const dataFormatada = formatarDataParaBackend(mes, ano);
 
-    
+
     const limiteData: LimiteDTO = {
-      idLimite: idLimite,
+      idLimite: id,
       valor: parseFloat(valor.toString()),
       data: dataFormatada,
     };
 
-    console.log(`Editando limite ${idLimite}:`, limiteData);
+    console.log(`Editando limite ${id}:`, limiteData);
 
-    const response = await api.put(`/limite/${idLimite}`, limiteData);
+    const response = await api.put(`/limite/${id}`, limiteData);
     return response.data;
   } catch (error) {
     console.error("Erro ao editar limite:", error);
@@ -131,7 +122,7 @@ export const buscarLimites = async (): Promise<LimiteFrontendDTO[]> => {
         idLimite: limite.id || limite.idLimite, // Flexibilidade para diferentes estruturas
         valor: limite.valor,
         data: limite.data,
-        
+
         // Campos calculados para o frontend
         mes: mes, // 0-11 para compatibilidade com o Picker
         ano: ano,
@@ -153,3 +144,12 @@ export const buscarLimites = async (): Promise<LimiteFrontendDTO[]> => {
     throw new Error("Erro ao carregar limites");
   }
 };
+
+export async function buscarSaldoDoMes(data: Date) {
+  const dataFormatada = data.toISOString().split('T')[0]; 
+console.log("Buscando saldo para a data:", dataFormatada);
+  const response = await api.get(`/limite/saldo`, {
+    params: { data: dataFormatada }
+  });
+  return response.data;
+}
