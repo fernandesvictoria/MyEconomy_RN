@@ -7,21 +7,11 @@ import { useAuth } from "../../hooks/useAuth";
 export default function Login({ navigation }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
   const { onLogin } = useAuth();
 
-  const isValidForm = 
-    email.trim() !== "" && 
-    senha.trim() !== "" && 
-    confirmarSenha.trim() !== "" &&
-    senha === confirmarSenha;
+  const isValidForm = email.trim() !== "" && senha.trim() !== "";
 
   const handleSignIn = async () => {
-    if (senha !== confirmarSenha) {
-      Alert.alert("Erro", "As senhas não coincidem");
-      return;
-    }
-
     try {
       await onLogin(email, senha);
       navigation.navigate("Home");
@@ -33,7 +23,7 @@ export default function Login({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>ENTRAR</Text>
-      
+
       <View style={styles.formContainer}>
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -51,21 +41,6 @@ export default function Login({ navigation }) {
           onChangeText={setSenha}
         />
 
-        <Text style={styles.label}>Confirmar Senha</Text>
-        <TextInput
-          style={[
-            styles.input,
-            confirmarSenha !== "" && senha !== confirmarSenha && styles.inputError
-          ]}
-          secureTextEntry
-          value={confirmarSenha}
-          onChangeText={setConfirmarSenha}
-        />
-
-        {confirmarSenha !== "" && senha !== confirmarSenha && (
-          <Text style={styles.errorText}>As senhas não coincidem</Text>
-        )}
-        
         <Button title="Entrar" onPress={handleSignIn} disabled={!isValidForm} />
 
         <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
